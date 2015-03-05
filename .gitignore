@@ -1,0 +1,6 @@
+.DS_Store
+/app
+/bin/
+/composer.phar
+/vendor/
+/web
