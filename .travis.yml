@@ -9,7 +9,7 @@ php:
     - hhvm-nightly
 before_script:
     - curl -s https://getcomposer.org/installer | php
-    - php composer.phar install --dev
+    - php composer.phar install
 script: phpunit -c phpunit.xml.dist --coverage-text
 matrix:
     fast_finish: true
