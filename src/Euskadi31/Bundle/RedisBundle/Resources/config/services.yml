@@ -1,1 +1,6 @@
+parameters:
+    session.handler.redis.class: Euskadi31\Bundle\RedisBundle\Redis\RedisSessionHandler
 services:
+    session.handler.redis:
+        class:     %session.handler.redis.class%
+        arguments: [@pdo, %pdo.db_options%]

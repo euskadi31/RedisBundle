@@ -4,12 +4,25 @@ namespace Euskadi31\Bundle\RedisBundle\Tests\Redis;
 
 use Euskadi31\Bundle\RedisBundle\Redis\RedisSessionHandler;
 use RedisException;
+use Redis;
 
 class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConstructor()
+    public function getRedisMock()
     {
         $redisMock = $this->getMock('Redis');
+        $redisMock->method('setOption')
+            ->with(
+                $this->equalTo(Redis::OPT_PREFIX),
+                $this->equalTo('Euskadi31_Bundle_RedisBundle_Redis_RedisSessionHandler__')
+            );
+
+        return $redisMock;
+    }
+
+    public function testConstructor()
+    {
+        $redisMock = $this->getRedisMock();
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -18,7 +31,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testOpen()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -27,7 +40,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testClose()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -36,7 +49,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testGc()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -45,7 +58,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testWrite()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('set')
             ->with($this->equalTo('foo'), $this->equalTo('bar'), $this->equalTo(11));
 
@@ -56,7 +69,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testWriteError()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('set')
             ->with($this->equalTo('foo1'), $this->equalTo('bar1'), $this->equalTo(10))
             ->will($this->throwException(new RedisException));
@@ -68,7 +81,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testReadEmpty()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('exists')
             ->with($this->equalTo('session1'))
             ->will($this->returnValue(false));
@@ -80,7 +93,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testReadError()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('exists')
             ->with($this->equalTo('session2'))
             ->will($this->throwException(new RedisException));
@@ -92,7 +105,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testRead()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('exists')
             ->with($this->equalTo('session3'))
             ->will($this->returnValue(true));
@@ -109,7 +122,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testDestroy()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('del')
             ->with($this->equalTo('session4'))
             ->will($this->returnValue(1));
@@ -121,7 +134,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testDestroyEmpty()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('del')
             ->with($this->equalTo('session5'))
             ->will($this->returnValue(0));
@@ -133,7 +146,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testDestroyError()
     {
-        $redisMock = $this->getMock('Redis');
+        $redisMock = $this->getRedisMock();
         $redisMock->method('del')
             ->with($this->equalTo('session6'))
             ->will($this->throwException(new RedisException));
