@@ -20,9 +20,48 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('euskadi31_redis');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $rootNode
+            ->children()
+                ->arrayNode('server')
+                    ->children()
+                        ->scalarNode('host')->defaultValue('localhost')->end()
+                        ->scalarNode('port')->defaultValue(6379)->end()
+                    ->end()
+                ->end()
+                ->arrayNode('sentinels')
+                    ->requiresAtLeastOneElement()
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('host')->isRequired()->end()
+                            ->scalarNode('port')->defaultValue(26379)->end()
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('client')
+                    ->isRequired()
+                    ->children()
+                        ->arrayNode('redis')
+                            ->children()
+                                ->scalarNode('auth')->defaultNull()->end()
+                                ->scalarNode('namespace')->defaultNull()->end()
+                                ->floatNode('timeout')
+                                    ->defaultValue(1)
+                                    ->min(0)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('sentinel')
+                            ->children()
+                                ->scalarNode('auth')->defaultNull()->end()
+                                ->floatNode('timeout')
+                                    ->defaultValue(0.5)
+                                    ->min(0)
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
 
         return $treeBuilder;
     }

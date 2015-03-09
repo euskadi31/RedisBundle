@@ -12,18 +12,18 @@ class RedisSessionHandler implements SessionHandlerInterface
 {
     protected $redis;
 
-    protected $maxLifetime;
+    protected $max_lifetime;
 
     /**
      * Contructor
      *
-     * @param Redis   $redis       instance of Redis
-     * @param integer $maxLifetime max lifetime of Redis storage
+     * @param RedisManagerInterface $manager        instance of RedisManager
+     * @param integer               $max_lifetime   max lifetime of Redis storage
      */
-    public function __construct(Redis $redis, $maxLifetime)
+    public function __construct(RedisManagerInterface $manager, $max_lifetime)
     {
-        $this->maxLifetime = $maxLifetime;
-        $this->redis = clone $redis;
+        $this->max_lifetime = $max_lifetime;
+        $this->redis = clone $manager->getRedis();
         $this->redis->setOption(Redis::OPT_PREFIX, str_replace('\\', '_', __CLASS__) . '__');
     }
 
@@ -63,7 +63,7 @@ class RedisSessionHandler implements SessionHandlerInterface
                 return null;
             } else {
                 // each read increment lifetime
-                $this->redis->expire($session_id, $this->maxLifetime);
+                $this->redis->expire($session_id, $this->max_lifetime);
                 return $this->redis->get($session_id);
             }
         } catch (\RedisException $e) {
@@ -77,7 +77,7 @@ class RedisSessionHandler implements SessionHandlerInterface
     public function write($session_id, $data)
     {
         try {
-            $this->redis->set($session_id, (string)$data, $this->maxLifetime);
+            $this->redis->set($session_id, (string)$data, $this->max_lifetime);
             return true;
         } catch (\RedisException $e) {
             return false;

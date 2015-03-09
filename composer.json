@@ -2,6 +2,16 @@
     "name": "euskadi31/redis-bundle",
     "license": "MIT",
     "type": "bundle",
+    "description": "A Redis Bundle for Symfony 2",
+    "keywords": ["redis", "sentinel", "bundle", "symfony"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Axel Etcheverry",
+            "email": "axel@etcheverry.biz",
+            "homepage": "https://twitter.com/euskadi31"
+        }
+    ],
     "autoload": {
         "psr-0": {
             "Euskadi31": "src/"

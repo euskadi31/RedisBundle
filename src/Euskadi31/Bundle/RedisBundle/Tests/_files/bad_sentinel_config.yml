@@ -1,0 +1,6 @@
+euskadi31_redis:
+    sentinels: ~
+    client:
+        sentinel:
+            auth: ~
+            timeout: 0.5

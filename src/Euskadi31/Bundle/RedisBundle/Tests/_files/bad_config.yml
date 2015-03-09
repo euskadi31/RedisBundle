@@ -1,0 +1,3 @@
+euskadi31_redis:
+    sentinels: ~
+    client: ~

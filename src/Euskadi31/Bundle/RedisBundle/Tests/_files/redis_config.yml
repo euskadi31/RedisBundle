@@ -1,0 +1,9 @@
+euskadi31_redis:
+    server:
+        host: 127.0.0.1
+        port: 6379
+    client:
+        redis:
+            auth: ~
+            namespace: ~
+            timeout: 1
