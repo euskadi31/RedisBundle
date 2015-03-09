@@ -5,5 +5,6 @@ euskadi31_redis:
         - {host: 127.0.0.3}
     client:
         sentinel:
+            master: mymaster
             auth: ~
             timeout: 0.5

@@ -3,6 +3,9 @@
 namespace Euskadi31\Bundle\RedisBundle\Redis;
 
 use Redis;
+use RedisMasterDiscovery;
+use RedisSentinel;
+use RedisException;
 
 class RedisManager implements RedisManagerInterface
 {
@@ -43,9 +46,8 @@ class RedisManager implements RedisManagerInterface
     }
 
     /**
-     * [processRedisConfig description]
-     * @param  array  $config [description]
-     * @return [type]         [description]
+     * @param  array  $config
+     * @return void
      */
     public function processRedisConfig(array $config)
     {
@@ -53,42 +55,73 @@ class RedisManager implements RedisManagerInterface
             throw new RedisManagerException('The "server" property is required.');
         }
 
-        if ($config['server']['host'][0] == '/') {
-            $this->redis->connect($config['server']['host']);
+        $conf = $config['client']['redis'];
+        $conf['host'] = $config['server']['host'];
+
+        if (isset($config['server']['port'])) {
+            $conf['port'] = $config['server']['port'];
+        }
+
+        $this->connect($conf);
+    }
+
+    /**
+     *
+     * @param  array  $config
+     * @return void
+     */
+    public function connect(array $config)
+    {
+        if ($config['host'][0] == '/') {
+            $this->redis->connect($config['host']);
         } else {
             $this->redis->connect(
-                $config['server']['host'],
-                $config['server']['port'],
-                $config['client']['redis']['timeout']
+                $config['host'],
+                $config['port'],
+                $config['timeout']
             );
         }
 
-        if (isset($config['client']['redis']['auth']) && !empty($config['client']['redis']['auth'])) {
-            $this->redis->auth($config['client']['redis']['auth']);
+        if (isset($config['auth']) && !empty($config['auth'])) {
+            $this->redis->auth($config['auth']);
         }
 
-        if (isset($config['client']['redis']['db']) && !is_null($config['client']['redis']['db'])) {
-            $this->redis->select((int)$config['client']['redis']['db']);
+        if (isset($config['db']) && !is_null($config['db'])) {
+            $this->redis->select((int)$config['db']);
         }
 
-        if (isset($config['client']['redis']['namespace']) && !empty($client['client']['redis']['namespace'])) {
+        if (isset($config['namespace']) && !empty($config['namespace'])) {
             $this->redis->setOption(
                 Redis::OPT_PREFIX,
-                rtrim($config['client']['redis']['namespace'], ':') . ':'
+                rtrim($config['namespace'], ':') . ':'
             );
         }
     }
 
     /**
-     * [processSentinelConfig description]
-     * @param  array  $config [description]
-     * @return [type]         [description]
+     *
+     * @param  array  $config
+     * @return void
      */
     public function processSentinelConfig(array $config)
     {
         if (!isset($config['sentinels'])) {
             throw new RedisManagerException('The "sentinels" property is required.');
         }
+
+        $discovery = new RedisMasterDiscovery();
+
+        foreach ($config['sentinels'] as $sentinel) {
+            $discovery->addSentinel(new RedisSentinel($sentinel['host'], $sentinel['port']));
+        }
+
+        $master = $discovery->getMasterAddrByName($config['client']['sentinel']['master']);
+
+        $conf = $config['client']['sentinel'];
+        $conf['host'] = $master[0];
+        $conf['port'] = $master[1];
+
+        $this->connect($conf);
     }
 
 
