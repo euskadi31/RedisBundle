@@ -5,7 +5,6 @@ namespace Euskadi31\Bundle\RedisBundle\Redis;
 use Redis;
 use RedisMasterDiscovery;
 use RedisSentinel;
-use RedisException;
 
 class RedisManager implements RedisManagerInterface
 {
