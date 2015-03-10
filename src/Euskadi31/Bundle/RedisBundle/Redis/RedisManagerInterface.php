@@ -6,7 +6,7 @@ use Redis;
 
 interface RedisManagerInterface
 {
-    public function __construct(Redis $redis, array $config);
+    public function __construct(array $config, Redis $redis = null);
 
     /**
      * Get Redis instance
