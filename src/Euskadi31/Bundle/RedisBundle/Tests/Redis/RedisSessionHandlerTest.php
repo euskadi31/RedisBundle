@@ -20,23 +20,11 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
         return $redisMock;
     }
 
-    public function getRedisManagerMock($redisMock)
-    {
-        $redisManagerMock = $this->getMock('Euskadi31\Bundle\RedisBundle\Redis\RedisManagerInterface');
-        $redisManagerMock->method('getRedis')
-            ->will($this->returnValue($redisMock));
-
-        return $redisManagerMock;
-    }
-
-
     public function testConstructor()
     {
         $redisMock = $this->getRedisMock();
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
-
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertInstanceOf('Redis', $s->getRedis());
     }
@@ -45,9 +33,7 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
-
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertTrue($s->open('/', 'toto'));
     }
@@ -56,9 +42,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertTrue($s->close());
     }
@@ -67,9 +53,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertTrue($s->gc(10));
     }
@@ -78,12 +64,12 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
+
 
         $redisMock->method('set')
             ->with($this->equalTo('foo'), $this->equalTo('bar'), $this->equalTo(11));
 
-        $s = new RedisSessionHandler($redisManagerMock, 11);
+        $s = new RedisSessionHandler($redisMock, 11);
 
         $this->assertTrue($s->write('foo', 'bar'));
     }
@@ -95,9 +81,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('foo1'), $this->equalTo('bar1'), $this->equalTo(10))
             ->will($this->throwException(new RedisException));
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertFalse($s->write('foo1', 'bar1'));
     }
@@ -109,9 +95,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('session1'))
             ->will($this->returnValue(false));
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertNull($s->read('session1'));
     }
@@ -123,9 +109,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('session2'))
             ->will($this->throwException(new RedisException));
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertNull($s->read('session2'));
     }
@@ -142,9 +128,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('session3'))
             ->will($this->returnValue('session_data'));
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertEquals('session_data', $s->read('session3'));
     }
@@ -156,9 +142,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('session4'))
             ->will($this->returnValue(1));
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertTrue($s->destroy('session4'));
     }
@@ -170,9 +156,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('session5'))
             ->will($this->returnValue(0));
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertFalse($s->destroy('session5'));
     }
@@ -184,9 +170,9 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('session6'))
             ->will($this->throwException(new RedisException));
 
-        $redisManagerMock = $this->getRedisManagerMock($redisMock);
 
-        $s = new RedisSessionHandler($redisManagerMock, 10);
+
+        $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertFalse($s->destroy('session6'));
     }

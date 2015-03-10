@@ -17,13 +17,13 @@ class RedisSessionHandler implements SessionHandlerInterface
     /**
      * Contructor
      *
-     * @param RedisManagerInterface $manager        instance of RedisManager
-     * @param integer               $max_lifetime   max lifetime of Redis storage
+     * @param Redis     $manager        instance of RedisManager
+     * @param integer   $max_lifetime   max lifetime of Redis storage
      */
-    public function __construct(RedisManagerInterface $manager, $max_lifetime)
+    public function __construct(Redis $redis, $max_lifetime)
     {
         $this->max_lifetime = $max_lifetime;
-        $this->redis = clone $manager->getRedis();
+        $this->redis = clone $redis;
         $this->redis->setOption(Redis::OPT_PREFIX, str_replace('\\', '_', __CLASS__) . '__');
     }
 

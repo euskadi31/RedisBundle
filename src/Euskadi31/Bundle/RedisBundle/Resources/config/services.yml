@@ -5,6 +5,10 @@ services:
     redis.manager:
         class: %redis.manager.class%
         arguments: [%redis%]
+    redis:
+        class: Redis
+        factory_service: redis.manager
+        factory_method: getRedis
     session.handler.redis:
         class:     %session.handler.redis.class%
-        arguments: [@redis.manager, 10]
+        arguments: [@redis, 10]

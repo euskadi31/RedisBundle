@@ -49,11 +49,15 @@ class Euskadi31RedisExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->container->compile();
 
+        $this->assertTrue($this->container->has('redis'));
+        $redis = $this->container->get('redis');
+        $this->assertInstanceOf('Redis', $redis);
+
         $this->assertTrue($this->container->has('redis.manager'));
         $manager = $this->container->get('redis.manager');
         $this->assertInstanceOf('Euskadi31\Bundle\RedisBundle\Redis\RedisManager', $manager);
 
-        $this->assertInstanceOf('Redis', $manager->getRedis());
+        $this->assertEquals($redis, $manager->getRedis());
     }
 
     public function testSentinelsConfig()
@@ -63,11 +67,15 @@ class Euskadi31RedisExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->container->compile();
 
+        $this->assertTrue($this->container->has('redis'));
+        $redis = $this->container->get('redis');
+        $this->assertInstanceOf('Redis', $redis);
+
         $this->assertTrue($this->container->has('redis.manager'));
         $manager = $this->container->get('redis.manager');
         $this->assertInstanceOf('Euskadi31\Bundle\RedisBundle\Redis\RedisManager', $manager);
 
-        $this->assertInstanceOf('Redis', $manager->getRedis());
+        $this->assertEquals($redis, $manager->getRedis());
     }
 
     /**
