@@ -1,3 +1,4 @@
 euskadi31_redis:
+    type: redis
     sentinels: ~
     client: ~

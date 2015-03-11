@@ -22,6 +22,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
     public function testConstructorWithoutRedis()
     {
         $manager = new RedisManager([
+            'type' => 'redis',
             'server' => [
                 'host' => '127.0.0.1',
                 'port' => 6379
@@ -49,6 +50,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $manager = new RedisManager([
+            'type' => 'redis',
             'client' => [
                 'redis' => [
                     'timeout' => 1
@@ -62,6 +64,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
         $redisMock = $this->getRedisMock();
 
         $manager = new RedisManager([
+            'type' => 'redis',
             'server' => [
                 'host' => '127.0.0.1',
                 'port' => 6379
@@ -85,6 +88,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $manager = new RedisManager([
+            'type' => 'redis',
             'server' => [
                 'host' => '/var/run/redis.sock'
             ],
@@ -108,6 +112,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo('password'));
 
         $manager = new RedisManager([
+            'type' => 'redis',
             'server' => [
                 'host' => '/var/run/redis.sock'
             ],
@@ -132,6 +137,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo(4));
 
         $manager = new RedisManager([
+            'type' => 'redis',
             'server' => [
                 'host' => '/var/run/redis.sock'
             ],
@@ -156,6 +162,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo(Redis::OPT_PREFIX), $this->equalTo('my:app:'));
 
         $manager = new RedisManager([
+            'type' => 'redis',
             'server' => [
                 'host' => '/var/run/redis.sock'
             ],
@@ -178,6 +185,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
         $redisMock = $this->getRedisMock();
 
         $manager = new RedisManager([
+            'type' => 'redis',
             'client' => [
                 'redis' => [
                     'timeout' => 1
@@ -195,6 +203,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(true));
 
         $manager = new RedisManager([
+            'type' => 'sentinel',
             'sentinels' => [
                 [
                     'host' => '127.0.0.1',
@@ -216,6 +225,44 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($manager->getMasterDiscovery()->getSentinels()));
     }
 
+    public function testConstructorWithSentinelAndRedisConf()
+    {
+        $redisMock = $this->getRedisMock();
+        $redisMock->expects($this->once())
+            ->method('connect')
+            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(0.5))
+            ->will($this->returnValue(true));
+
+        $manager = new RedisManager([
+            'type' => 'sentinel',
+            'sentinels' => [
+                [
+                    'host' => '127.0.0.1',
+                    'port' => 26379
+                ]
+            ],
+            'server' => [
+                'host' => '/var/run/redis.sock'
+            ],
+            'client' => [
+                'sentinel' => [
+                    'master' => 'mymaster',
+                    'timeout' => 0.5
+                ],
+                'redis' => [
+                    'timeout' => 1,
+                    'namespace' => 'my:app:'
+                ]
+            ],
+        ], $redisMock);
+
+        $this->assertInstanceOf('Redis', $manager->getRedis());
+        $this->assertEquals($redisMock, $manager->getRedis());
+
+        $this->assertInstanceOf('RedisMasterDiscovery', $manager->getMasterDiscovery());
+        $this->assertEquals(1, count($manager->getMasterDiscovery()->getSentinels()));
+    }
+
     /**
      * @expectedException Euskadi31\Bundle\RedisBundle\Redis\RedisManagerException
      * @expectedExceptionMessage The "sentinels" property is required.
@@ -226,6 +273,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
         $redisMock = $this->getRedisMock();
 
         $manager = new RedisManager([
+            'type' => 'sentinel',
             'client' => [
                 'sentinel' => [
                     'master' => 'mymaster',
@@ -237,12 +285,16 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException Euskadi31\Bundle\RedisBundle\Redis\RedisManagerException
-     * @expectedExceptionMessage Bad config
+     * @expectedExceptionMessage Bad type config
      * @codeCoverageIgnore
      */
     public function testConstructorWithBadConf()
     {
         $redisMock = $this->getRedisMock();
+
+        $manager = new RedisManager([
+            'type' => 'bad_value'
+        ], $redisMock);
 
         $manager = new RedisManager([], $redisMock);
     }

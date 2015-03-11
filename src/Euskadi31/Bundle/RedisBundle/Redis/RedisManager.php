@@ -46,12 +46,12 @@ class RedisManager implements RedisManagerInterface
      */
     public function processConfig(array $config)
     {
-        if (isset($config['client']['redis'])) {
+        if (isset($config['type']) && $config['type'] == 'redis') {
             $this->processRedisConfig($config);
-        } else if (isset($config['client']['sentinel'])) {
+        } else if (isset($config['type']) && $config['type'] == 'sentinel') {
             $this->processSentinelConfig($config);
         } else {
-            throw new RedisManagerException('Bad config');
+            throw new RedisManagerException('Bad type config');
         }
     }
 
@@ -123,7 +123,11 @@ class RedisManager implements RedisManagerInterface
         }
 
         foreach ($config['sentinels'] as $sentinel) {
-            $this->discovery->addSentinel(new RedisSentinel($sentinel['host'], $sentinel['port']));
+            $this->discovery->addSentinel(new RedisSentinel(
+                $sentinel['host'],
+                $sentinel['port'],
+                $config['client']['sentinel']['timeout']
+            ));
         }
 
         $master = $this->discovery->getMasterAddrByName($config['client']['sentinel']['master']);

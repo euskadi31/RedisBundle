@@ -42,6 +42,11 @@ class Euskadi31RedisExtensionTest extends \PHPUnit_Framework_TestCase
         $loader->load($resource . '.yml');
     }
 
+    public function testConfig()
+    {
+
+    }
+
     public function testRedisConfig()
     {
         $this->initContainer();
