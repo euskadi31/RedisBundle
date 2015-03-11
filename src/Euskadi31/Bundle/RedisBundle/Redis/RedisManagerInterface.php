@@ -9,6 +9,13 @@ interface RedisManagerInterface
     public function __construct(array $config, Redis $redis = null);
 
     /**
+     * Get Redis Master Discovery
+     *
+     * @return RedisMasterDiscovery
+     */
+    public function getMasterDiscovery();
+
+    /**
      * Get Redis instance
      *
      * @return Redis

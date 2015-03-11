@@ -2,9 +2,16 @@
 
 class RedisMasterDiscovery
 {
+    protected $sentinels = [];
+
     public function addSentinel(RedisSentinel $sentinel)
     {
+        $this->sentinels[] = $sentinel;
+    }
 
+    public function getSentinels()
+    {
+        return $this->sentinels;
     }
 
     public function getMasterAddrByName($master)

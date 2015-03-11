@@ -14,6 +14,11 @@ class RedisManager implements RedisManagerInterface
     protected $redis;
 
     /**
+     * @var Discovery
+     */
+    protected $discovery;
+
+    /**
      *
      */
     public function __construct(array $config, Redis $redis = null)
@@ -27,6 +32,8 @@ class RedisManager implements RedisManagerInterface
         if ($redis->isConnected()) {
             throw new RedisManagerException('Redis is already connected');
         }
+
+        $this->discovery = new RedisMasterDiscovery();
 
         $this->processConfig($config);
     }
@@ -75,29 +82,32 @@ class RedisManager implements RedisManagerInterface
      */
     public function connect(array $config)
     {
+        $status = false;
         if ($config['host'][0] == '/') {
-            $this->redis->connect($config['host']);
+            $status = $this->redis->connect($config['host']);
         } else {
-            $this->redis->connect(
+            $status = $this->redis->connect(
                 $config['host'],
                 $config['port'],
                 $config['timeout']
             );
         }
 
-        if (isset($config['auth']) && !empty($config['auth'])) {
-            $this->redis->auth($config['auth']);
-        }
+        if ($status) {
+            if (isset($config['auth']) && !empty($config['auth'])) {
+                $this->redis->auth($config['auth']);
+            }
 
-        if (isset($config['db']) && !is_null($config['db'])) {
-            $this->redis->select((int)$config['db']);
-        }
+            if (isset($config['db']) && !is_null($config['db'])) {
+                $this->redis->select((int)$config['db']);
+            }
 
-        if (isset($config['namespace']) && !empty($config['namespace'])) {
-            $this->redis->setOption(
-                Redis::OPT_PREFIX,
-                rtrim($config['namespace'], ':') . ':'
-            );
+            if (isset($config['namespace']) && !empty($config['namespace'])) {
+                $this->redis->setOption(
+                    Redis::OPT_PREFIX,
+                    rtrim($config['namespace'], ':') . ':'
+                );
+            }
         }
     }
 
@@ -112,13 +122,11 @@ class RedisManager implements RedisManagerInterface
             throw new RedisManagerException('The "sentinels" property is required.');
         }
 
-        $discovery = new RedisMasterDiscovery();
-
         foreach ($config['sentinels'] as $sentinel) {
-            $discovery->addSentinel(new RedisSentinel($sentinel['host'], $sentinel['port']));
+            $this->discovery->addSentinel(new RedisSentinel($sentinel['host'], $sentinel['port']));
         }
 
-        $master = $discovery->getMasterAddrByName($config['client']['sentinel']['master']);
+        $master = $this->discovery->getMasterAddrByName($config['client']['sentinel']['master']);
 
         $conf = $config['client']['sentinel'];
         $conf['host'] = $master[0];
@@ -127,6 +135,13 @@ class RedisManager implements RedisManagerInterface
         $this->connect($conf);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function getMasterDiscovery()
+    {
+        return $this->discovery;
+    }
 
     /**
      * {@inheritDoc}
