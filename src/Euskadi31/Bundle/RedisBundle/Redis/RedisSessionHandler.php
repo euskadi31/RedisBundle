@@ -10,9 +10,20 @@ use Redis;
  */
 class RedisSessionHandler implements SessionHandlerInterface
 {
+    /**
+     * @var Redis
+     */
     protected $redis;
 
+    /**
+     * @var integer
+     */
     protected $max_lifetime;
+
+    /**
+     * @var string
+     */
+    protected $prefix;
 
     /**
      * Contructor
@@ -24,7 +35,7 @@ class RedisSessionHandler implements SessionHandlerInterface
     {
         $this->max_lifetime = $max_lifetime;
         $this->redis = clone $redis;
-        $this->redis->setOption(Redis::OPT_PREFIX, str_replace('\\', '_', __CLASS__) . '__');
+        $this->prefix = 'symfony:session:';
     }
 
     /**
@@ -59,12 +70,12 @@ class RedisSessionHandler implements SessionHandlerInterface
     public function read($session_id)
     {
         try {
-            if (!$this->redis->exists($session_id)) {
+            if (!$this->redis->exists($this->prefix . $session_id)) {
                 return null;
             } else {
                 // each read increment lifetime
-                $this->redis->expire($session_id, $this->max_lifetime);
-                return $this->redis->get($session_id);
+                $this->redis->expire($this->prefix . $session_id, $this->max_lifetime);
+                return $this->redis->get($this->prefix . $session_id);
             }
         } catch (\RedisException $e) {
             return null;
@@ -77,7 +88,7 @@ class RedisSessionHandler implements SessionHandlerInterface
     public function write($session_id, $data)
     {
         try {
-            $this->redis->set($session_id, (string)$data, $this->max_lifetime);
+            $this->redis->set($this->prefix . $session_id, (string)$data, $this->max_lifetime);
             return true;
         } catch (\RedisException $e) {
             return false;
@@ -90,7 +101,7 @@ class RedisSessionHandler implements SessionHandlerInterface
     public function destroy($session_id)
     {
         try {
-            $ret = $this->redis->del($session_id);
+            $ret = $this->redis->del($this->prefix . $session_id);
 
             return ($ret > 0);
 

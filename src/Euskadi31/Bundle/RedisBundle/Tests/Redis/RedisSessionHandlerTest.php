@@ -11,11 +11,11 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     public function getRedisMock()
     {
         $redisMock = $this->getMock('Redis');
-        $redisMock->method('setOption')
+        /*$redisMock->method('setOption')
             ->with(
                 $this->equalTo(Redis::OPT_PREFIX),
                 $this->equalTo('Euskadi31_Bundle_RedisBundle_Redis_RedisSessionHandler__')
-            );
+            );*/
 
         return $redisMock;
     }
@@ -42,8 +42,6 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
 
-
-
         $s = new RedisSessionHandler($redisMock, 10);
 
         $this->assertTrue($s->close());
@@ -52,8 +50,6 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     public function testGc()
     {
         $redisMock = $this->getRedisMock();
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -64,10 +60,8 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
 
-
-
         $redisMock->method('set')
-            ->with($this->equalTo('foo'), $this->equalTo('bar'), $this->equalTo(11));
+            ->with($this->equalTo('symfony:session:foo'), $this->equalTo('bar'), $this->equalTo(11));
 
         $s = new RedisSessionHandler($redisMock, 11);
 
@@ -78,10 +72,8 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
         $redisMock->method('set')
-            ->with($this->equalTo('foo1'), $this->equalTo('bar1'), $this->equalTo(10))
+            ->with($this->equalTo('symfony:session:foo1'), $this->equalTo('bar1'), $this->equalTo(10))
             ->will($this->throwException(new RedisException));
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -92,10 +84,8 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
         $redisMock->method('exists')
-            ->with($this->equalTo('session1'))
+            ->with($this->equalTo('symfony:session:session1'))
             ->will($this->returnValue(false));
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -106,10 +96,8 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
         $redisMock->method('exists')
-            ->with($this->equalTo('session2'))
+            ->with($this->equalTo('symfony:session:session2'))
             ->will($this->throwException(new RedisException));
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -120,15 +108,13 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
         $redisMock->method('exists')
-            ->with($this->equalTo('session3'))
+            ->with($this->equalTo('symfony:session:session3'))
             ->will($this->returnValue(true));
         $redisMock->method('expire')
-            ->with($this->equalTo('session3'), $this->equalTo(10));
+            ->with($this->equalTo('symfony:session:session3'), $this->equalTo(10));
         $redisMock->method('get')
-            ->with($this->equalTo('session3'))
+            ->with($this->equalTo('symfony:session:session3'))
             ->will($this->returnValue('session_data'));
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -139,10 +125,8 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
         $redisMock->method('del')
-            ->with($this->equalTo('session4'))
+            ->with($this->equalTo('symfony:session:session4'))
             ->will($this->returnValue(1));
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -153,10 +137,8 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
         $redisMock->method('del')
-            ->with($this->equalTo('session5'))
+            ->with($this->equalTo('symfony:session:session5'))
             ->will($this->returnValue(0));
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
@@ -167,10 +149,8 @@ class RedisSessionHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $redisMock = $this->getRedisMock();
         $redisMock->method('del')
-            ->with($this->equalTo('session6'))
+            ->with($this->equalTo('symfony:session:session6'))
             ->will($this->throwException(new RedisException));
-
-
 
         $s = new RedisSessionHandler($redisMock, 10);
 
