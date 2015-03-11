@@ -33,8 +33,6 @@ class RedisManager implements RedisManagerInterface
             throw new RedisManagerException('Redis is already connected');
         }
 
-        $this->discovery = new RedisMasterDiscovery();
-
         $this->processConfig($config);
     }
 
@@ -121,6 +119,8 @@ class RedisManager implements RedisManagerInterface
         if (!isset($config['sentinels'])) {
             throw new RedisManagerException('The "sentinels" property is required.');
         }
+
+        $this->discovery = new RedisMasterDiscovery();
 
         foreach ($config['sentinels'] as $sentinel) {
             $this->discovery->addSentinel(new RedisSentinel(
