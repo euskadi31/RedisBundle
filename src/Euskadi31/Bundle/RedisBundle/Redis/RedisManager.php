@@ -107,7 +107,7 @@ class RedisManager implements RedisManagerInterface
                 }
 
                 $retry--;
-                usleep($config['interval']);
+                usleep($config['interval'] * 1000);
             } while ($retry > 0);
         }
 
