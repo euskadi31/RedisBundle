@@ -89,14 +89,26 @@ class RedisManager implements RedisManagerInterface
     public function connect(array $config)
     {
         $status = false;
+
         if ($config['host'][0] == '/') {
             $status = $this->redis->connect($config['host']);
         } else {
-            $status = $this->redis->connect(
-                $config['host'],
-                $config['port'],
-                $config['timeout']
-            );
+            $retry = $config['retry'];
+
+            do {
+
+                if ($this->redis->connect(
+                    $config['host'],
+                    $config['port'],
+                    $config['timeout']
+                )) {
+                    $status = true;
+                    break;
+                }
+
+                $retry--;
+                usleep($config['interval']);
+            } while ($retry > 0);
         }
 
         if ($status) {
@@ -114,6 +126,8 @@ class RedisManager implements RedisManagerInterface
                     rtrim($config['namespace'], ':') . ':'
                 );
             }
+        } else {
+            throw new RedisManagerException('Connexion failed.');
         }
     }
 
@@ -140,7 +154,7 @@ class RedisManager implements RedisManagerInterface
 
         $master = $this->discovery->getMasterAddrByName($config['client']['sentinel']['master']);
 
-        $conf = $config['client']['sentinel'];
+        $conf = $config['client']['redis'];
         $conf['host'] = $master[0];
         $conf['port'] = $master[1];
 

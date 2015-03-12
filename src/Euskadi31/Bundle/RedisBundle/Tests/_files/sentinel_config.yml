@@ -5,6 +5,8 @@ euskadi31_redis:
         - {host: 127.0.0.2, port: 26379}
         - {host: 127.0.0.3}
     client:
+        redis:
+            timeout: 1
         sentinel:
             master: mymaster
             auth: ~

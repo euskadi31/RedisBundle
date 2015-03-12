@@ -37,7 +37,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ],
             'client' => [
                 'redis' => [
-                    'timeout' => 1
+                    'timeout' => 1,
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ]);
@@ -61,7 +63,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             'type' => 'redis',
             'client' => [
                 'redis' => [
-                    'timeout' => 1
+                    'timeout' => 1,
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ], $redisMock);
@@ -70,6 +74,10 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
     public function testConstructorWithRedisConf()
     {
         $redisMock = $this->getRedisMock();
+        $redisMock->expects($this->once())
+            ->method('connect')
+            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(1))
+            ->will($this->returnValue(true));
 
         $manager = new RedisManager([
             'type' => 'redis',
@@ -79,7 +87,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ],
             'client' => [
                 'redis' => [
-                    'timeout' => 1
+                    'timeout' => 1,
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ], $redisMock);
@@ -88,10 +98,57 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($redisMock, $manager->getRedis());
     }
 
+    public function _retry($redisMock)
+    {
+        $manager = new RedisManager([
+            'type' => 'redis',
+            'server' => [
+                'host' => '127.0.0.1',
+                'port' => 6379
+            ],
+            'client' => [
+                'redis' => [
+                    'timeout' => 1,
+                    'retry' => 3,
+                    'interval' => 1000
+                ]
+            ]
+        ], $redisMock);
+
+        $this->assertInstanceOf('Redis', $manager->getRedis());
+        $this->assertEquals($redisMock, $manager->getRedis());
+    }
+
+    public function testConstructorWithRedisConfAndRetry()
+    {
+        $redisMock = $this->getRedisMock();
+        $redisMock->expects($this->exactly(1))
+            ->method('connect')
+            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(1))
+            ->will($this->returnValue(true));
+        $this->_retry($redisMock);
+    }
+
+    /**
+     * @expectedException Euskadi31\Bundle\RedisBundle\Redis\RedisManagerException
+     * @expectedExceptionMessage Connexion failed.
+     * @codeCoverageIgnore
+     */
+    public function testRetryFail()
+    {
+        $redisMock = $this->getRedisMock();
+        $redisMock->expects($this->exactly(3))
+            ->method('connect')
+            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(1))
+            ->will($this->returnValue(false));
+        $this->_retry($redisMock);
+    }
+
     public function testConstructorWithRedisConfSocket()
     {
         $redisMock = $this->getRedisMock();
-        $redisMock->method('connect')
+        $redisMock->expects($this->once())
+            ->method('connect')
             ->with($this->equalTo('/var/run/redis.sock'))
             ->will($this->returnValue(true));
 
@@ -102,7 +159,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             ],
             'client' => [
                 'redis' => [
-                    'timeout' => 1
+                    'timeout' => 1,
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ], $redisMock);
@@ -127,7 +186,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             'client' => [
                 'redis' => [
                     'timeout' => 1,
-                    'auth' => 'password'
+                    'auth' => 'password',
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ], $redisMock);
@@ -152,7 +213,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             'client' => [
                 'redis' => [
                     'timeout' => 1,
-                    'db' => 4
+                    'db' => 4,
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ], $redisMock);
@@ -177,7 +240,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             'client' => [
                 'redis' => [
                     'timeout' => 1,
-                    'namespace' => 'my:app:'
+                    'namespace' => 'my:app:',
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ], $redisMock);
@@ -196,7 +261,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
             'type' => 'redis',
             'client' => [
                 'redis' => [
-                    'timeout' => 1
+                    'timeout' => 1,
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ]
         ], $redisMock);
@@ -207,7 +274,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
         $redisMock = $this->getRedisMock();
         $redisMock->expects($this->once())
             ->method('connect')
-            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(0.5))
+            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(1))
             ->will($this->returnValue(true));
 
         $manager = new RedisManager([
@@ -219,6 +286,11 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
                 ]
             ],
             'client' => [
+                'redis' => [
+                    'timeout' => 1,
+                    'retry' => 3,
+                    'interval' => 1000
+                ],
                 'sentinel' => [
                     'master' => 'mymaster',
                     'timeout' => 0.5
@@ -238,7 +310,7 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
         $redisMock = $this->getRedisMock();
         $redisMock->expects($this->once())
             ->method('connect')
-            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(0.5))
+            ->with($this->equalTo('127.0.0.1'), $this->equalTo(6379), $this->equalTo(1))
             ->will($this->returnValue(true));
 
         $manager = new RedisManager([
@@ -259,7 +331,9 @@ class RedisManagerTest extends \PHPUnit_Framework_TestCase
                 ],
                 'redis' => [
                     'timeout' => 1,
-                    'namespace' => 'my:app:'
+                    'namespace' => 'my:app:',
+                    'retry' => 3,
+                    'interval' => 1000
                 ]
             ],
         ], $redisMock);

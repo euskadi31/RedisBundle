@@ -1,6 +1,7 @@
 parameters:
     redis.manager.class: Euskadi31\Bundle\RedisBundle\Redis\RedisManager
     session.handler.redis.class: Euskadi31\Bundle\RedisBundle\Redis\RedisSessionHandler
+    swiftmailer.spool.redis.class: Euskadi31\Bundle\RedisBundle\SwiftMailer\RedisSpool
     session_lifetime: 3600
 services:
     redis.manager:
