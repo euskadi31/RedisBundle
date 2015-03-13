@@ -20,6 +20,7 @@
     "require": {
         "php": ">=5.3.3",
         "symfony/framework-bundle": "~2.1",
-        "swiftmailer/swiftmailer": ">=4.2.0,~5.0"
+        "swiftmailer/swiftmailer": ">=4.2.0,~5.0",
+        "psr/log": "~1.0"
     }
 }

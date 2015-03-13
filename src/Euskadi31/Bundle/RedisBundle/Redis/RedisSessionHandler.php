@@ -12,11 +12,13 @@ namespace Euskadi31\Bundle\RedisBundle\Redis;
 
 use SessionHandlerInterface;
 use Redis;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LogLevel;
 
 /**
  * Session handler
  */
-class RedisSessionHandler implements SessionHandlerInterface
+class RedisSessionHandler implements SessionHandlerInterface, LoggerAwareInterface
 {
     /**
      * @var Redis
@@ -33,6 +35,8 @@ class RedisSessionHandler implements SessionHandlerInterface
      */
     protected $prefix;
 
+    use LogAwareTrait;
+
     /**
      * Contructor
      *
@@ -42,7 +46,7 @@ class RedisSessionHandler implements SessionHandlerInterface
     public function __construct(Redis $redis, $max_lifetime)
     {
         $this->max_lifetime = $max_lifetime;
-        $this->redis = clone $redis;
+        $this->redis = $redis;
         $this->prefix = 'symfony:session:';
     }
 
@@ -79,13 +83,16 @@ class RedisSessionHandler implements SessionHandlerInterface
     {
         try {
             if (!$this->redis->exists($this->prefix . $session_id)) {
+                $this->log(LogLevel::INFO, 'Session id not found', [$this->prefix, $session_id]);
                 return null;
             } else {
                 // each read increment lifetime
+                $this->log(LogLevel::INFO, 'Read session id', [$this->prefix, $session_id]);
                 $this->redis->expire($this->prefix . $session_id, $this->max_lifetime);
                 return $this->redis->get($this->prefix . $session_id);
             }
         } catch (\RedisException $e) {
+            $this->log(LogLevel::ERROR, $e->getMessage(), [$this->prefix, $session_id]);
             return null;
         }
     }
@@ -97,8 +104,10 @@ class RedisSessionHandler implements SessionHandlerInterface
     {
         try {
             $this->redis->set($this->prefix . $session_id, (string)$data, $this->max_lifetime);
+            $this->log(LogLevel::INFO, 'Write session id', [$this->prefix, $session_id]);
             return true;
         } catch (\RedisException $e) {
+            $this->log(LogLevel::ERROR, $e->getMessage(), [$this->prefix, $session_id]);
             return false;
         }
     }
@@ -111,9 +120,12 @@ class RedisSessionHandler implements SessionHandlerInterface
         try {
             $ret = $this->redis->del($this->prefix . $session_id);
 
+            $this->log(LogLevel::INFO, 'Delete session id', [$this->prefix, $session_id, $ret]);
+
             return ($ret > 0);
 
         } catch (\RedisException $e) {
+            $this->log(LogLevel::ERROR, $e->getMessage(), [$this->prefix, $session_id]);
             return false;
         }
     }

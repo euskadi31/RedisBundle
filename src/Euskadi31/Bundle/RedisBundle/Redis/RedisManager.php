@@ -13,8 +13,10 @@ namespace Euskadi31\Bundle\RedisBundle\Redis;
 use Redis;
 use RedisMasterDiscovery;
 use RedisSentinel;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LogLevel;
 
-class RedisManager implements RedisManagerInterface
+class RedisManager implements RedisManagerInterface, LoggerAwareInterface
 {
     /**
      * @var Redis
@@ -25,6 +27,8 @@ class RedisManager implements RedisManagerInterface
      * @var Discovery
      */
     protected $discovery;
+
+    use LogAwareTrait;
 
     /**
      *
