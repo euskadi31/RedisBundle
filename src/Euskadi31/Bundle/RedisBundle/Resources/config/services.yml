@@ -9,6 +9,8 @@ services:
         arguments: [%redis%]
         calls:
             - [setLogger, [@?logger]]
+        tags:
+            - { name: monolog.logger, channel: redis }
     redis:
         class: Redis
         factory_service: redis.manager
@@ -18,3 +20,5 @@ services:
         arguments: [@redis, %session_lifetime%]
         calls:
             - [setLogger, [@?logger]]
+        tags:
+            - { name: monolog.logger, channel: redis }
