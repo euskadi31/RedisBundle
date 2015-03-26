@@ -1,6 +1,7 @@
 parameters:
     redis.manager.class: Euskadi31\Bundle\RedisBundle\Redis\RedisManager
     session.handler.redis.class: Euskadi31\Bundle\RedisBundle\Redis\RedisSessionHandler
+    session.native.handler.redis.class: Euskadi31\Bundle\RedisBundle\Redis\NativeRedisSessionHandler
     swiftmailer.spool.redis.class: Euskadi31\Bundle\RedisBundle\SwiftMailer\RedisSpool
     session_lifetime: 3600
 services:
@@ -22,3 +23,6 @@ services:
             - [setLogger, [@?logger]]
         tags:
             - { name: monolog.logger, channel: redis }
+    session.native.handler.redis:
+        class: %session.native.handler.redis.class%
+        arguments: [@redis]
