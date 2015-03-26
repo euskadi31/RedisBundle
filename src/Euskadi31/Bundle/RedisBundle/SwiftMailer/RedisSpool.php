@@ -14,11 +14,14 @@ use Swift_ConfigurableSpool;
 use Swift_Mime_Message;
 use Swift_Transport;
 use Redis;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LogLevel;
+use Euskadi31\Bundle\RedisBundle\Redis\LogAwareTrait;
 
 /**
  * RedisSpool
  */
-class RedisSpool extends Swift_ConfigurableSpool
+class RedisSpool extends Swift_ConfigurableSpool implements LoggerAwareInterface
 {
     /**
      * @var string
@@ -29,6 +32,8 @@ class RedisSpool extends Swift_ConfigurableSpool
      * @var \Redis
      */
     protected $redis;
+
+    use LogAwareTrait;
 
     /**
      * @param \Redis $redis
@@ -93,9 +98,11 @@ class RedisSpool extends Swift_ConfigurableSpool
      */
     public function queueMessage(Swift_Mime_Message $message)
     {
-        $this->redis->rpush($this->key, serialize($message));
+        $length = $this->redis->rpush($this->key, serialize($message));
 
-        return true;
+        $this->log(LogLevel::DEBUG, 'queue message', [$this->key, $message]);
+
+        return (bool) $length;
     }
 
     /**
@@ -116,6 +123,8 @@ class RedisSpool extends Swift_ConfigurableSpool
         $time               = time();
 
         while (($message = unserialize($this->redis->lpop($this->key)))) {
+            $this->log(LogLevel::DEBUG, 'send message', [$message]);
+
             $count += $transport->send($message, $failedRecipients);
 
             if ($this->getMessageLimit() && $count >= $this->getMessageLimit()) {

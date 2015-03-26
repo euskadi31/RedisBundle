@@ -62,7 +62,8 @@ class RedisSpoolTest extends \PHPUnit_Framework_TestCase
 
         $redisMock->expects($this->once())
             ->method('rpush')
-            ->with($this->equalTo('foo'), $this->equalTo(serialize($messageMock)));
+            ->with($this->equalTo('foo'), $this->equalTo(serialize($messageMock)))
+            ->will($this->returnValue(1));
 
         $spool = new RedisSpool();
         $spool->setKey('foo');

@@ -5,6 +5,12 @@ parameters:
     swiftmailer.spool.redis.class: Euskadi31\Bundle\RedisBundle\SwiftMailer\RedisSpool
     session_lifetime: 3600
 services:
+    swiftmailer.spool.redis:
+        class: %swiftmailer.spool.redis.class%
+        calls:
+            - [setRedis, [@redis]]
+            - [setKey, ["swiftmailer"]]
+            - [setLogger, [@?logger]]
     redis.manager:
         class: %redis.manager.class%
         arguments: [%redis%]
