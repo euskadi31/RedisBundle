@@ -11,6 +11,8 @@ services:
             - [setRedis, [@redis]]
             - [setKey, ["swiftmailer"]]
             - [setLogger, [@?logger]]
+        tags:
+            - { name: monolog.logger, channel: redis }
     redis.manager:
         class: %redis.manager.class%
         arguments: [%redis%]
