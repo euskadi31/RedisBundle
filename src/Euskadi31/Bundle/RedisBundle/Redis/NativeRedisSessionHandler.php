@@ -32,9 +32,16 @@ class NativeRedisSessionHandler extends NativeSessionHandler
     public function __construct(Redis $redis)
     {
         ini_set('session.save_handler', 'redis');
-        ini_set(
-            'session.save_path',
-            sprintf('tcp://%s:%d?persistent=0', $redis->getHost(), $redis->getPort())
-        );
+        if($redis->getAuth() === null) {
+            ini_set(
+                'session.save_path',
+                sprintf('tcp://%s:%d?persistent=0', $redis->getHost(), $redis->getPort())
+            );
+        } else {
+            ini_set(
+                'session.save_path',
+                sprintf('tcp://%s:%d?persistent=0&auth=%s', $redis->getHost(), $redis->getPort(), urlencode($redis->getAuth()))
+            );
+        }
     }
 }
