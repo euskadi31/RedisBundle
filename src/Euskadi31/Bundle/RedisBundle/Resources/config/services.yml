@@ -6,18 +6,18 @@ parameters:
     session_lifetime: 3600
 services:
     swiftmailer.spool.redis:
-        class: %swiftmailer.spool.redis.class%
+        class: '%swiftmailer.spool.redis.class%'
         calls:
-            - [setRedis, [@redis]]
+            - [setRedis, ['@redis']]
             - [setKey, ["swiftmailer"]]
-            - [setLogger, [@?logger]]
+            - [setLogger, ['@?logger']]
         tags:
             - { name: monolog.logger, channel: redis }
     redis.manager:
-        class: %redis.manager.class%
-        arguments: [%redis%]
+        class: '%redis.manager.class%'
+        arguments: ['%redis%']
         calls:
-            - [setLogger, [@?logger]]
+            - [setLogger, ['@?logger']]
         tags:
             - { name: monolog.logger, channel: redis }
     redis:
@@ -25,12 +25,12 @@ services:
         factory_service: redis.manager
         factory_method: getRedis
     session.handler.redis:
-        class:     %session.handler.redis.class%
-        arguments: [@redis, %session_lifetime%]
+        class:     '%session.handler.redis.class%'
+        arguments: ['@redis', '%session_lifetime%']
         calls:
-            - [setLogger, [@?logger]]
+            - [setLogger, ['@?logger']]
         tags:
             - { name: monolog.logger, channel: redis }
     session.native.handler.redis:
-        class: %session.native.handler.redis.class%
-        arguments: [@redis]
+        class: '%session.native.handler.redis.class%'
+        arguments: ['@redis']
